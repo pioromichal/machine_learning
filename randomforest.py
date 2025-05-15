@@ -16,6 +16,7 @@ class RandomForest(Classifier):
         self._models = []
         self._trained = False
 
+
     @staticmethod
     def bootstrap(x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         indices = np.random.randint(0, len(x), len(x))
