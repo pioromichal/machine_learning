@@ -1,5 +1,7 @@
 import numpy as np
 from collections import Counter
+from typing import Tuple
+from joblib import Parallel, delayed
 
 
 class Classifier:
@@ -14,8 +16,9 @@ class Classifier:
 
 
 class GaussianNaiveBayes(Classifier):
-    def __init__(self):
+    def __init__(self, epsilon=1e-6):
         super().__init__()
+        self.epsilon = epsilon
         self.priors = {}
         self.likelihoods = {}
 
@@ -36,10 +39,8 @@ class GaussianNaiveBayes(Classifier):
                 std = np.std(feature_values)
                 self.likelihoods[clas][feature_idx] = {"mean": mean, "std": std}
 
-    @staticmethod
-    def normal_dist(x, mean, std):
-        if std == 0:
-            std = 1e-6
+    def normal_dist(self, x, mean, std):
+        std = max(std, self.epsilon)
         return (1 / (np.sqrt(2 * np.pi) * std)) * np.exp(-((x - mean) ** 2) / (2 * (std ** 2)))
 
     def predict(self, sample):
@@ -100,10 +101,11 @@ class Node:
 
 
 class DecisionTreeClassifier(Classifier):
-    def __init__(self, max_depth):
+    def __init__(self, max_depth, max_features="sqrt"):
         super().__init__()
         self.depth = 0
         self.max_depth = max_depth
+        self.max_features = max_features
         self.tree = None
 
     @staticmethod
@@ -139,13 +141,30 @@ class DecisionTreeClassifier(Classifier):
     def get_best_split(self, data: np.ndarray, classes: np.ndarray):
         best_feature, best_split_val, best_gain = None, None, -np.inf
 
-        for feature in range(data.shape[1]):
+        n_features = data.shape[1]
+
+        if self.max_features == "sqrt":
+            k = max(1, int(np.sqrt(n_features)))
+        elif self.max_features == "all":
+            k = n_features
+        elif isinstance(self.max_features, int):
+            k = min(self.max_features, n_features)
+        else:
+            raise ValueError("Invalid max_features value")
+
+        features_to_try = np.random.choice(n_features, size=k, replace=False)
+
+        for feature in features_to_try:
             split, gain = self.get_best_feature_split(data[:, feature], classes)
 
             if gain > best_gain:
                 best_feature = feature
                 best_split_val = split
                 best_gain = gain
+
+        if best_feature is None or best_split_val is None:
+            return None, None
+
         return best_feature, best_split_val
 
     def _build_tree(self, data, classes, depth=0):
@@ -155,6 +174,11 @@ class DecisionTreeClassifier(Classifier):
             return Node(val=np.bincount(classes).argmax())
 
         best_feature, best_split_val = self.get_best_split(data, classes)
+
+        if best_feature is None or best_split_val is None:
+            # Nie udało się znaleźć sensownego podziału — zwróć najczęstszą klasę
+            return Node(val=np.bincount(classes).argmax())
+
         child_a_ids = data[:, best_feature] <= best_split_val
         child_classes_a = classes[child_a_ids]
         child_classes_b = classes[~child_a_ids]
@@ -164,11 +188,72 @@ class DecisionTreeClassifier(Classifier):
         child_node_a = self._build_tree(child_data_a, child_classes_a, depth + 1)
         child_node_b = self._build_tree(child_data_b, child_classes_b, depth + 1)
 
-        return Node(split_feature=best_feature, split_val=best_split_val, depth=depth, child_node_a=child_node_a,
-                    child_node_b=child_node_b)
+        return Node(
+            split_feature=best_feature,
+            split_val=best_split_val,
+            depth=depth,
+            child_node_a=child_node_a,
+            child_node_b=child_node_b
+        )
 
     def fit(self, data: np.ndarray, classes: np.ndarray):
         self.tree = self._build_tree(data, classes)
 
     def predict(self, data):
         return self.tree.predict(data)
+
+
+class RandomForest(Classifier):
+    def __init__(self, trees_number, tree_percentage=1.0, n_jobs=-1,
+                 max_features="sqrt", epsilon=1e-6, discrete_x=True):
+        super().__init__()
+        self._trees_number = trees_number
+        self._tree_percentage = tree_percentage
+        self._n_jobs = n_jobs
+        self._max_features = max_features
+        self._epsilon = epsilon
+        self._models = []
+        self._trained = False
+
+    @staticmethod
+    def bootstrap(x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        indices = np.random.randint(0, len(x), len(x))
+        return x[indices], y[indices]
+
+    def fit(self, data: np.ndarray, classes: np.ndarray, **kwargs) -> None:
+        super().fit(data, classes)
+
+        n_trees = int(self._tree_percentage * self._trees_number)
+        n_bayes = self._trees_number - n_trees
+
+        used_jobs = 1 if self._n_jobs is None else self._n_jobs
+
+        tree_models = Parallel(n_jobs=used_jobs)(
+            delayed(self._train_tree)(data, classes) for _ in range(n_trees)
+        )
+        bayes_models = Parallel(n_jobs=used_jobs)(
+            delayed(self._train_naive_bayes)(data, classes) for _ in range(n_bayes)
+        )
+
+        self._models = tree_models + bayes_models
+        self._trained = True
+
+    def _train_tree(self, x, y):
+        model = DecisionTreeClassifier(max_depth=1e10, max_features=self._max_features)
+        x_i, y_i = self.bootstrap(x, y)
+        model.fit(x_i, y_i)
+        return model
+
+    def _train_naive_bayes(self, x, y):
+        model = GaussianNaiveBayes(epsilon=self._epsilon)
+        x_i, y_i = self.bootstrap(x, y)
+        model.fit(x_i, y_i)
+        return model
+
+    def _predict_sample(self, sample: np.ndarray) -> int:
+        predictions = [model.predict(sample) for model in self._models]
+        majority_vote = Counter(predictions).most_common(1)[0][0]
+        return majority_vote
+
+    def predict(self, data: np.ndarray) -> np.ndarray:
+        return np.array([self._predict_sample(sample) for sample in data])
