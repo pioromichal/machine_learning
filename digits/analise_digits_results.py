@@ -1,15 +1,19 @@
-from plot_utils import plot_metric_lines_from_json, plot_confusion_from_json
+import sys
+import os
 
-plot_metric_lines_from_json(
-    json_path="results/iris/results_tree_percentage_20250521_150847.json",
-    # save_path="results/iris/metric_lines_tree_percentage.png",
-    y_range=(0.8, 1.0)
-)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-plot_confusion_from_json(
-    json_path="results/iris/results_tree_percentage_20250521_150847.json",
-    label_value=0.5,
-    # save_path="results/iris/confusion_0.5.png"
-)
+from plot_utils import generate_full_report
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+RESULTS_DIR = os.path.join(BASE_DIR, 'results')
+
+def main():
+    trees_number_file = os.path.join(RESULTS_DIR, "trees_number")
+    epsilon_file = os.path.join(RESULTS_DIR, "epsilon")
+    generate_full_report(trees_number_file, 1, y_range=(0.8, 1.0))
+    generate_full_report(epsilon_file, 1, y_range=(0.8, 1.0))
+
+if __name__ == "__main__":
+    main()
