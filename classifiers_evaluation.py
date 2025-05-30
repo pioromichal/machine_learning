@@ -108,6 +108,8 @@ def analyze_param_impact(X, y, param_values, param_name='trees_number', fixed_pa
             "confusion_matrix": cm.tolist()
         }
 
+    all_details["n_features"] = X.shape[1]
+
     # === Zapis do results/ ===
     save_dir = "results"
     os.makedirs(save_dir, exist_ok=True)
