@@ -17,6 +17,11 @@ def evaluate_random_forest_avg(
     test_size: float = 0.3,
     verbose: bool = True
 ):
+    
+    X = np.array(X)
+    y = np.array(y)
+    all_labels = np.unique(y)  # Get all possible class labels once
+
     all_metrics = {
         'accuracy': [],
         'precision': [],
@@ -41,7 +46,8 @@ def evaluate_random_forest_avg(
             preds = model.predict(X_test)
 
             metrics = compute_metrics(y_test, preds)
-            cm = get_confusion(y_test, preds)
+            # Pass all_labels so confusion matrices always have same shape
+            cm = get_confusion(y_test, preds, all_labels=all_labels)
 
             for key in all_metrics:
                 all_metrics[key].append(metrics[key])
@@ -64,7 +70,6 @@ def evaluate_random_forest_avg(
     print_metrics(avg_metrics)
 
     return avg_metrics, avg_confusion, per_run_metrics, per_run_confusions
-
 
 def analyze_param_impact(X, y, param_values, param_name='trees_number', fixed_params=None, n_runs=10):
     fixed_params = fixed_params or {}

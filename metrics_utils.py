@@ -16,7 +16,9 @@ def print_metrics(metrics_dict):
         print(f"{k.capitalize()}: {v:.3f}")
 
 
-def get_confusion(y_true, y_pred):
-    return confusion_matrix(y_true, y_pred)
-
-
+def get_confusion(y_true, y_pred, all_labels=None):
+    from sklearn.metrics import confusion_matrix
+    import numpy as np
+    if all_labels is None:
+        all_labels = np.unique(np.concatenate([y_true, y_pred]))
+    return confusion_matrix(y_true, y_pred, labels=all_labels)
