@@ -6,6 +6,7 @@
         2
     ],
     "n_runs": 10,
+    "n_features": 4,
     "fixed_params": {
         "tree_percentage": 0.5,
         "trees_number": 21,
