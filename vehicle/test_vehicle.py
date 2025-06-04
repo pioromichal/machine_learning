@@ -18,16 +18,16 @@ y = le.fit_transform(y)
 
 # Fixed parameters for experiments
 fixed_defaults = {
-    'tree_percentage': 0.5,
+    'tree_percentage': 0.9,
     'trees_number': 21,
     'max_features': 'sqrt',
-    'epsilon': 1e-6,
+    'epsilon': 1.0,
     'test_size': 0.3
 }
 n_runs = 30
 
 # === 1. Test: change tree_percentage ===
-tree_percentages = [0.0, 0.25, 0.5, 0.75, 1.0]
+tree_percentages = [0.0, 0.25, 0.5, 0.75, 0.9, 1.0]
 analyze_param_impact(
     X=X,
     y=y,
@@ -49,7 +49,7 @@ analyze_param_impact(
 )
 
 # === 3. Test: change max_features ===
-feature_options = ["sqrt", "all", 2]
+feature_options = [1, "sqrt", 5 ,"all"]
 analyze_param_impact(
     X=X,
     y=y,
@@ -60,7 +60,7 @@ analyze_param_impact(
 )
 
 # === 4. Test: change epsilon ===
-epsilon_values = [1e-10, 1e-6, 1e-2, 0.1, 1.0]
+epsilon_values = [1e-10, 1e-6, 1e-2, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9, 1.0]
 analyze_param_impact(
     X=X,
     y=y,
