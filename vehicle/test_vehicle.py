@@ -24,7 +24,7 @@ fixed_defaults = {
     'epsilon': 1e-6,
     'test_size': 0.3
 }
-n_runs = 10
+n_runs = 30
 
 # === 1. Test: change tree_percentage ===
 tree_percentages = [0.0, 0.25, 0.5, 0.75, 1.0]
