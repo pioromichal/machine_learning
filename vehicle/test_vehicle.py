@@ -24,10 +24,10 @@ fixed_defaults = {
     'epsilon': 1.0,
     'test_size': 0.3
 }
-n_runs = 30
+n_runs = 10
 
 # === 1. Test: change tree_percentage ===
-tree_percentages = [0.0, 0.25, 0.5, 0.75, 0.9, 1.0]
+tree_percentages = [0.0, 0.25, 0.5, 0.75, 0.9, 0.95, 1.0]
 analyze_param_impact(
     X=X,
     y=y,
@@ -38,7 +38,7 @@ analyze_param_impact(
 )
 
 # === 2. Test: change trees_number ===
-tree_counts = [11, 21, 51]
+tree_counts = [11, 21, 30, 51, 80, 100]
 analyze_param_impact(
     X=X,
     y=y,
