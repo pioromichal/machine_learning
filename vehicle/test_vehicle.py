@@ -19,7 +19,7 @@ y = le.fit_transform(y)
 # Fixed parameters for experiments
 fixed_defaults = {
     'tree_percentage': 0.9,
-    'trees_number': 21,
+    'trees_number': 150,
     'max_features': 'sqrt',
     'epsilon': 1.0,
     'test_size': 0.3
@@ -38,7 +38,7 @@ analyze_param_impact(
 )
 
 # === 2. Test: change trees_number ===
-tree_counts = [11, 21, 30, 51, 80, 100]
+tree_counts = [11, 21, 30, 51, 80, 100, 150]
 analyze_param_impact(
     X=X,
     y=y,

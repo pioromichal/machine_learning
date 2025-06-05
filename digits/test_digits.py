@@ -14,7 +14,7 @@ y = digits.target
 # --- Parametry stałe dla eksperymentów ---
 fixed_defaults = {
     'tree_percentage': 0.9,
-    'trees_number': 21,
+    'trees_number': 150,
     'max_features': 'sqrt',
     'epsilon': 1.0,
     'test_size': 0.3
@@ -33,7 +33,7 @@ analyze_param_impact(
 )
 
 # === 2. Test: zmiana trees_number ===
-tree_counts = [11, 21, 51]
+tree_counts = [11, 21, 51, 80, 150]
 analyze_param_impact(
     X=X,
     y=y,
