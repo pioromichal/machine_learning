@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.ticker as mticker
 
-# Mapowanie nazw parametrów na polskie etykiety
 PARAM_NAME_MAP = {
     'trees_number': 'Liczba drzew',
     'tree_percentage': 'Procent drzew',
@@ -52,19 +51,15 @@ def generate_full_report(param_name: str, index: int = 1, y_range=(0.0, 1.0)):
     else:
         labels = [float(label) for label in labels_str]
 
-    # Pobieramy uśrednione metryki
     metrics_dicts = [data['results'][label]['avg_metrics'] for label in labels_str]
     df_avg = pd.DataFrame(metrics_dicts, index=labels)
 
-    # Pobieramy także metryki z każdego przebiegu do zakresów
     per_run_metrics = {}
     for label_str in labels_str:
         per_run_metrics[label_str] = data['results'][label_str]['per_run_metrics']
 
-    # Tłumaczenie nazwy parametru na polski (jeśli istnieje)
     param_label = PARAM_NAME_MAP.get(param_name, param_name)
 
-    # === 1. Wykres metryk 4x1 ===
     fig, axs = plt.subplots(4, 1, figsize=(10, 12), sharex=True)
     metrics = ['accuracy', 'precision', 'recall', 'f1']
     metric_labels = ['Dokładność', 'Precyzja', 'Czułość', 'F1']
@@ -72,7 +67,6 @@ def generate_full_report(param_name: str, index: int = 1, y_range=(0.0, 1.0)):
     for i, metric in enumerate(metrics):
         avg_vals = df_avg[metric]
 
-        # Zbieramy minima i maksima
         min_vals = []
         max_vals = []
         for label_str in labels_str:
@@ -95,7 +89,6 @@ def generate_full_report(param_name: str, index: int = 1, y_range=(0.0, 1.0)):
     plt.savefig(_get_plot_path(param_name, index, "subplot"))
     plt.close()
 
-    # === 2. Macierze pomyłek dla każdej wartości parametru ===
     for label_str, result in data['results'].items():
         cm = np.array(result['confusion_matrix'])
         num_classes = cm.shape[0]

@@ -6,12 +6,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from sklearn.datasets import load_digits
 from classifiers_evaluation import analyze_param_impact
 
-# Wczytanie zbioru digits
 digits = load_digits()
 X = digits.data
 y = digits.target
 
-# --- Parametry stałe dla eksperymentów ---
 fixed_defaults = {
     'tree_percentage': 0.9,
     'trees_number': 150,
@@ -21,7 +19,6 @@ fixed_defaults = {
 }
 n_runs = 10
 
-# === 1. Test: zmiana tree_percentage ===
 tree_percentages = [0.0, 0.25, 0.5, 0.75, 0.9, 1.0]
 analyze_param_impact(
     X=X,
@@ -32,7 +29,6 @@ analyze_param_impact(
     n_runs=n_runs
 )
 
-# === 2. Test: zmiana trees_number ===
 tree_counts = [11, 21, 51, 80, 150]
 analyze_param_impact(
     X=X,
@@ -43,7 +39,6 @@ analyze_param_impact(
     n_runs=n_runs
 )
 
-# === 3. Test: zmiana max_features ===
 feature_options = [1, "sqrt", 8 ,"all"]
 analyze_param_impact(
     X=X,
@@ -54,7 +49,6 @@ analyze_param_impact(
     n_runs=n_runs
 )
 
-# === 4. Test: zmiana epsilon ===
 epsilon_values = [1e-10, 1e-6, 1e-2, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0]
 analyze_param_impact(
     X=X,

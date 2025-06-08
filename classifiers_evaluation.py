@@ -20,7 +20,7 @@ def evaluate_random_forest_avg(
     
     X = np.array(X)
     y = np.array(y)
-    all_labels = np.unique(y)  # Get all possible class labels once
+    all_labels = np.unique(y)
 
     all_metrics = {
         'accuracy': [],
@@ -46,7 +46,6 @@ def evaluate_random_forest_avg(
             preds = model.predict(X_test)
 
             metrics = compute_metrics(y_test, preds)
-            # Pass all_labels so confusion matrices always have same shape
             cm = get_confusion(y_test, preds, all_labels=all_labels)
 
             for key in all_metrics:
@@ -115,22 +114,18 @@ def analyze_param_impact(X, y, param_values, param_name='trees_number', fixed_pa
 
     all_details["n_features"] = X.shape[1]
 
-    # === Zapis do results/ ===
     save_dir = "results"
     os.makedirs(save_dir, exist_ok=True)
 
-    # Znajdź kolejny dostępny numer
     existing = [f for f in os.listdir(save_dir) if f.startswith(param_name) and f.endswith(".json")]
     existing_ids = [
         int(f.split("_")[-1].split(".")[0]) for f in existing if f.split("_")[-1].split(".")[0].isdigit()
     ]
     next_id = max(existing_ids, default=0) + 1
 
-    # Nazwa pliku
     json_filename = f"{param_name}_{next_id}.json"
     json_path = os.path.join(save_dir, json_filename)
 
-    # Zapisz
     with open(json_path, 'w') as f:
         json.dump(all_details, f, indent=4)
 
